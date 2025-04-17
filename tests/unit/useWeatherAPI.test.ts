@@ -18,128 +18,43 @@ mockNuxtImport('useFetch', () => {
     })
 })
 
-import { getCoordinates, getCurrentWeather, getCurrentWeatherFromCityName } from '../../composables/useWeatherAPI'
+import { useWeatherAPI } from '../../composables/useWeatherAPI'
 
-describe('getCoordinates', () => {
+describe('useWeatherAPI', () => {
+    let weatherAPI: ReturnType<typeof useWeatherAPI>
+
     beforeEach(() => {
-        vi.clearAllMocks()
+        weatherAPI = useWeatherAPI()
     })
 
-    it('正常に座標を取得できる場合', async () => {
+    it('正常に座標が取得できる場合', async () => {
+        const mockResponse = [{ lat: 35.6895, lon: 139.6917 }]
+        mockUseFetchResponse.mockReturnValue(mockResponse)
 
-        mockUseFetchResponse.mockReturnValue([
-            { lat: 35.6895, lon: 139.6917 }
-        ])
-
-        const result = await getCoordinates('Tokyo')
-
-        expect(result).toEqual({
-            lat: 35.6895,
-            lon: 139.6917
-        })
+        const coordinates = await weatherAPI.getCoordinates('Tokyo')
+        expect(coordinates).toEqual({ lat: 35.6895, lon: 139.6917 })
     })
 
-    it('座標が見つからない場合はエラーがスローされる', async () => {
-        // 空の配列を返すようにモック設定
-        mockUseFetchResponse.mockReturnValue([])
+    it('座標が見つからない場合エラーが投げられる', async () => {
+        const mockResponse: any[] = []
+        mockUseFetchResponse.mockReturnValue(mockResponse)
 
-        await expect(getCoordinates('存在しない都市')).rejects.toThrow('存在しない都市の座標が見つかりませんでした')
+        await expect(weatherAPI.getCoordinates('InvalidCity')).rejects.toThrow('InvalidCityの座標が見つかりませんでした')
     })
 
-    it('APIがエラーを返した場合', async () => {
-        // エラーをスローするモック
-        mockUseFetchResponse.mockImplementation(() => {
-            throw new Error('API error')
-        })
+    it('正常に天気データが取得できる場合', async () => {
+        const mockResponse = { weather: [{ main: 'Clear', description: 'clear sky' }] }
+        mockUseFetchResponse.mockReturnValue(mockResponse)
 
-        await expect(getCoordinates('Tokyo')).rejects.toThrow('API error')
+        const weather = await weatherAPI.getCurrentWeather(35.6895, 139.6917)
+        expect(weather).toEqual({ stateMain: 'Clear', stateDescription: 'clear sky' })
     })
 
-})
+    it('天気データが取得できない場合エラーが投げられる', async () => {
+        const mockResponse = null
+        mockUseFetchResponse.mockReturnValue(mockResponse)
 
-describe('getCurrentWeather', () => {
-    beforeEach(() => {
-        vi.clearAllMocks()
+        await expect(weatherAPI.getCurrentWeather(999, 999)).rejects.toThrow('天気データが取得できませんでした')
     })
 
-    it('正常に天気データを取得できる場合', async () => {
-        mockUseFetchResponse.mockReturnValue({
-            weather: [
-                { main: 'Clear', description: 'clear sky' }
-            ]
-        })
-
-        const result = await getCurrentWeather(35.6895, 139.6917)
-
-        expect(result).toEqual({
-            stateMain: 'Clear',
-            stateDescription: 'clear sky'
-        })
-    })
-
-    it('天気データが取得できない場合はエラーがスローされる', async () => {
-        // nullを返すようにモック設定
-        mockUseFetchResponse.mockReturnValue(null)
-
-        await expect(getCurrentWeather(35.6895, 139.6917)).rejects.toThrow('天気データが取得できませんでした')
-    })
-
-    it('APIがエラーを返した場合', async () => {
-        // エラーをスローするモック
-        mockUseFetchResponse.mockImplementation(() => {
-            throw new Error('API error')
-        })
-
-        await expect(getCurrentWeather(35.6895, 139.6917)).rejects.toThrow('API error')
-    })
-})
-
-describe('getCurrentWeatherFromCityName', () => {
-    beforeEach(() => {
-        vi.clearAllMocks()
-    })
-
-    it('正常に天気情報を取得できる場合', async () => {
-        mockUseFetchResponse.mockReturnValueOnce([
-            { lat: 35.6895, lon: 139.6917 }
-        ])
-        mockUseFetchResponse.mockReturnValueOnce({
-            weather: [
-                { main: 'Clear', description: 'clear sky' }
-            ]
-        })
-
-        const result = await getCurrentWeatherFromCityName('Tokyo')
-
-        expect(result).toEqual({
-            stateMain: 'Clear',
-            stateDescription: 'clear sky'
-        })
-    })
-
-    it('座標が見つからない場合はエラーがスローされる', async () => {
-        // 空の配列を返すようにモック設定
-        mockUseFetchResponse.mockReturnValueOnce([])
-
-        await expect(getCurrentWeatherFromCityName('存在しない都市')).rejects.toThrow('存在しない都市の座標が見つかりませんでした')
-    })
-
-    it('天気データが取得できない場合はエラーがスローされる', async () => {
-        mockUseFetchResponse.mockReturnValueOnce([
-            { lat: 35.6895, lon: 139.6917 }
-        ])
-        // nullを返すようにモック設定
-        mockUseFetchResponse.mockReturnValueOnce(null)
-
-        await expect(getCurrentWeatherFromCityName('Tokyo')).rejects.toThrow('天気データが取得できませんでした')
-    })
-
-    it('APIがエラーを返した場合', async () => {
-        // エラーをスローするモック
-        mockUseFetchResponse.mockImplementationOnce(() => {
-            throw new Error('API error')
-        })
-
-        await expect(getCurrentWeatherFromCityName('Tokyo')).rejects.toThrow('API error')
-    })
 })
