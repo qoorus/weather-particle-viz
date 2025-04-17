@@ -4,6 +4,6 @@ export default defineVitestConfig({
   test: {
     environment: 'nuxt',
     // テスト対象ファイル
-    include: ['tests/init/*.test.ts'],
+    include: ['tests/unit/*.test.ts'],
   },
 })

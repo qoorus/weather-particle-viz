@@ -4,7 +4,7 @@ const apiKey = config.public.apiKey
 const baseUrlGeocoding = 'https://api.openweathermap.org/geo/1.0/direct'
 const baseUrlCurrentWeather = 'https://api.openweathermap.org/data/2.5/weather'
 
-async function getCoordinates(cityName: string): Promise<{lat: number, lon: number}> {
+export async function getCoordinates(cityName: string): Promise<{lat: number, lon: number}> {
     try {
         const geoCoordinates = await useFetch<{ lat: number; lon: number }[]>(baseUrlGeocoding, {
             params: {
