@@ -52,3 +52,17 @@ export async function getCurrentWeather(lat: number, lon: number): Promise<any> 
         throw error
     }
 }
+
+export async function getCurrentWeatherFromCityName(cityName: string): Promise<{ stateMain: string; stateDescription: string }> {
+    try {
+        const coordinates = await getCoordinates(cityName)
+        const weather = await getCurrentWeather(coordinates.lat, coordinates.lon)
+        return {
+            stateMain: weather.stateMain,
+            stateDescription: weather.stateDescription,
+        }
+    } catch (error) {
+        console.error('天気情報取得中にエラーが発生しました:', error)
+        throw error
+    }
+}
