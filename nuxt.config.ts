@@ -9,5 +9,10 @@ export default defineNuxtConfig({
     build: {
       chunkSizeWarningLimit: 1000
     }
-  }
+  },
+  runtimeConfig: {
+    public: {
+      apiKey: process.env.API_KEY,
+    },
+  },
 })
