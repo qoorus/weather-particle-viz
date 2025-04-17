@@ -6,7 +6,7 @@ const baseUrlCurrentWeather = 'https://api.openweathermap.org/data/2.5/weather'
 
 async function getCoordinates(cityName: string): Promise<{lat: number, lon: number}> {
     try {
-        const geoCoordinates = await useFetch(baseUrlGeocoding, {
+        const geoCoordinates = await useFetch<{ lat: number; lon: number }[]>(baseUrlGeocoding, {
             params: {
                 q: cityName,
                 limit: 1,
