@@ -27,3 +27,28 @@ export async function getCoordinates(cityName: string): Promise<{lat: number, lo
         throw error
     }
 }
+
+export async function getCurrentWeather(lat: number, lon: number): Promise<any> {
+    try {
+        const weatherData = await useFetch<{ weather: { main: string; description: string }[] }>(baseUrlCurrentWeather, {
+            params: {
+                lat: lat,
+                lon: lon,
+                appid: apiKey,
+                units: 'metric' // メトリック単位（摂氏）
+            }
+        })
+        const currentWeather = await weatherData.data.value
+        if (currentWeather) {
+            return {
+                stateMain: currentWeather.weather[0].main,
+                stateDescription: currentWeather.weather[0].description,
+            }
+        } else {
+            throw new Error('天気データが取得できませんでした')
+        }
+    } catch (error) {
+        console.error('天気データ取得中にエラーが発生しました:', error)
+        throw error
+    }
+}
