@@ -6,22 +6,21 @@ export function useWeatherAPI() {
     const baseUrlGeocoding = 'https://api.openweathermap.org/geo/1.0/direct'
     const baseUrlCurrentWeather = 'https://api.openweathermap.org/data/2.5/weather'
     
-    async function getCoordinates(cityName: string): Promise<{lat: number, lon: number}> {
+    const getCoordinates = async (cityName: string) => {
         try {
-            const geoCoordinates = await useFetch<{ lat: number; lon: number }[]>(baseUrlGeocoding, {
+            const geoCoordinates = await useFetch(baseUrlGeocoding, {
                 params: {
                     q: cityName,
                     limit: 1,
                     appid: apiKey,
                 }
             })
-            const data = await geoCoordinates.data.value
-            console.log('取得した座標:', data)
+            const coordinates = await geoCoordinates.data.value
 
-            if (data && data.length > 0) {
+            if (coordinates) {
                 return {
-                    lat: data[0].lat,
-                    lon: data[0].lon
+                    lat: coordinates[0].lat,
+                    lon: coordinates[0].lon
                 }
             } else {
                 throw new Error(`${cityName}の座標が見つかりませんでした`)
@@ -32,9 +31,9 @@ export function useWeatherAPI() {
         }
     }
     
-    async function getCurrentWeather(lat: number, lon: number): Promise<{ stateMain: string; stateDescription: string }> {
+    const getCurrentWeather = async (lat: number, lon: number) => {
         try {
-            const weatherData = await useFetch<{ weather: { main: string; description: string }[] }>(baseUrlCurrentWeather, {
+            const weatherData = await useFetch(baseUrlCurrentWeather, {
                 params: {
                     lat: lat,
                     lon: lon,
@@ -57,7 +56,7 @@ export function useWeatherAPI() {
         }
     }
 
-    async function getCurrentWeatherFromCityName(cityName: string): Promise<{ stateMain: string; stateDescription: string }> {
+    const getCurrentWeatherFromCityName = async (cityName: string) => {
         try {
             const coordinates = await getCoordinates(cityName)
             const weather = await getCurrentWeather(coordinates.lat, coordinates.lon)
@@ -70,7 +69,6 @@ export function useWeatherAPI() {
             throw error
         }
     }
-
     return {
         getCoordinates,
         getCurrentWeather,
