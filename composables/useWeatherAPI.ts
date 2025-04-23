@@ -1,3 +1,41 @@
+interface GeocodingResponse {
+    name: string;
+    lat: number;
+    lon: number;
+    country: string;
+    state?: string;
+}
+
+interface WeatherData {
+    weather: Array<{
+        id: number;
+        main: string;
+        description: string;
+        icon: string;
+    }>;
+    main: {
+        temp: number;
+        feels_like: number;
+        temp_min: number;
+        temp_max: number;
+        pressure: number;
+        humidity: number;
+    };
+    wind: {
+        speed: number;
+        deg: number;
+    };
+    clouds: {
+        all: number;
+    };
+    sys: {
+        country: string;
+        sunrise: number;
+        sunset: number;
+    };
+    name: string;
+}
+
 export function useWeatherAPI() {
 
     const config = useRuntimeConfig()
@@ -8,32 +46,30 @@ export function useWeatherAPI() {
     
     const getCoordinates = async (cityName: string) => {
         try {
-            const geoCoordinates = await useFetch(baseUrlGeocoding, {
+            const { data: geoResponse, error } = await useFetch(baseUrlGeocoding, {
                 params: {
                     q: cityName,
                     limit: 1,
                     appid: apiKey,
                 }
             })
-            const coordinates = await geoCoordinates.data.value
-
-            if (coordinates) {
-                return {
-                    lat: coordinates[0].lat,
-                    lon: coordinates[0].lon
-                }
-            } else {
-                throw new Error(`${cityName}の座標が見つかりませんでした`)
+            const coordinates = await geoResponse.value as GeocodingResponse[]
+            if (error.value) {
+                throw error.value
             }
-        } catch (error) {
-            console.error('座標取得中にエラーが発生しました:', error)
-            throw error
+            return {
+                lat: coordinates[0].lat,
+                lon: coordinates[0].lon
+            }
+        } catch (e) {
+            console.error('座標取得中にエラーが発生しました:', e)
+            throw e
         }
     }
-    
+
     const getCurrentWeather = async (lat: number, lon: number) => {
         try {
-            const weatherData = await useFetch(baseUrlCurrentWeather, {
+            const { data: weatherResponse, error }= await useFetch(baseUrlCurrentWeather, {
                 params: {
                     lat: lat,
                     lon: lon,
@@ -41,19 +77,19 @@ export function useWeatherAPI() {
                     units: 'metric' // メトリック単位（摂氏）
                 }
             })
-            const currentWeather = await weatherData.data.value
-            if (currentWeather) {
-                return {
-                    stateMain: currentWeather.weather[0].main,
-                    stateDescription: currentWeather.weather[0].description,
-                }
-            } else {
-                throw new Error('天気データが取得できませんでした')
+            const currentWeather = await weatherResponse.value as WeatherData
+            if (error.value) {
+                throw error.value
             }
-        } catch (error) {
-            console.error('天気データ取得中にエラーが発生しました:', error)
-            throw error
+            return {
+                stateMain: currentWeather.weather[0].main,
+                stateDescription: currentWeather.weather[0].description,
+            }
+        } catch (e) {
+            console.error('天気データ取得中にエラーが発生しました:', e)
+            throw e
         }
+
     }
 
     const getCurrentWeatherFromCityName = async (cityName: string) => {
@@ -64,9 +100,9 @@ export function useWeatherAPI() {
                 stateMain: weather.stateMain,
                 stateDescription: weather.stateDescription,
             }
-        } catch (error) {
-            console.error('天気情報取得中にエラーが発生しました:', error)
-            throw error
+        } catch (e) {
+            console.error('天気情報取得中にエラーが発生しました:', e)
+            throw e
         }
     }
     return {
