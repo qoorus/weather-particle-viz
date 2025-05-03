@@ -14,7 +14,15 @@ mockNuxtImport('useFetch', () => {
     return () => ({
         data: {
             value: mockUseFetchResponse()
-        }
+        },
+        error: {
+            value: null
+        },
+        execute: vi.fn(() => {
+            return new Promise((resolve) => {
+                resolve(mockUseFetchResponse())
+            })
+        }),
     })
 })
 
@@ -38,7 +46,6 @@ describe('useWeatherAPI', () => {
     it('座標が見つからない場合エラーが投げられる', async () => {
         const mockResponse: any[] = []
         mockUseFetchResponse.mockReturnValue(mockResponse)
-
         await expect(weatherAPI.getCoordinates('InvalidCity')).rejects.toThrow('InvalidCityの座標が見つかりませんでした')
     })
 
