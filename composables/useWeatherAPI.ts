@@ -45,14 +45,17 @@ export function useWeatherAPI() {
     const baseUrlCurrentWeather = 'https://api.openweathermap.org/data/2.5/weather'
     
     const getCoordinates = async (cityName: string) => {
+        const { data: geoResponse, error, execute } = useFetch(baseUrlGeocoding, {
+            params: {
+                q: cityName,
+                limit: 1,
+                appid: apiKey,
+            },
+            immediate: false,
+            watch: false,
+        })
         try {
-            const { data: geoResponse, error } = await useFetch(baseUrlGeocoding, {
-                params: {
-                    q: cityName,
-                    limit: 1,
-                    appid: apiKey,
-                }
-            })
+            await execute()
             const coordinates = await geoResponse.value as GeocodingResponse[]
             if (error.value) {
                 throw error.value
@@ -68,15 +71,18 @@ export function useWeatherAPI() {
     }
 
     const getCurrentWeather = async (lat: number, lon: number) => {
+        const { data: weatherResponse, error, execute }= await useFetch(baseUrlCurrentWeather, {
+            params: {
+                lat: lat,
+                lon: lon,
+                appid: apiKey,
+                units: 'metric' // メトリック単位（摂氏）
+            },
+            immediate: false,
+            watch: false,
+        })
         try {
-            const { data: weatherResponse, error }= await useFetch(baseUrlCurrentWeather, {
-                params: {
-                    lat: lat,
-                    lon: lon,
-                    appid: apiKey,
-                    units: 'metric' // メトリック単位（摂氏）
-                }
-            })
+            await execute()
             const currentWeather = await weatherResponse.value as WeatherData
             if (error.value) {
                 throw error.value
